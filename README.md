@@ -17,7 +17,7 @@ partitions/
   partitions_ota.csv    16 MB: two 3.5 MB app slots + 2 MB filesystem
 ```
 
-The IoT half — Wi-Fi, provisioning, device identity, the relay, OTA — is the
+The IoT half — Wi-Fi, provisioning, device identity, the HSC, OTA — is the
 separate [`hyperwisor`](https://github.com/nikolaindustry/hyperwisor_esp_idf)
 component. It is headless and runs on any ESP32, so a sensor node does not pull
 in a display stack.

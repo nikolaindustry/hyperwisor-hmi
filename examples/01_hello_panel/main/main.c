@@ -3,7 +3,7 @@
  *
  * Brings up the display and touch, connects to Hyperwisor, and shows the three
  * things you need before anything else can be debugged: who this device says it
- * is, whether it reached the relay, and what to do next.
+ * is, whether it reached the HSC, and what to do next.
  *
  * There is deliberately no UI framework above LVGL. This repository gives you a
  * board and a connection; the screens are yours.
@@ -26,7 +26,7 @@
 static const char *TAG = "hello_panel";
 
 static lv_obj_t *s_status;      /* connection state                */
-static lv_obj_t *s_device;      /* device id, as the relay sees it */
+static lv_obj_t *s_device;      /* device id, as the HSC sees it   */
 static lv_obj_t *s_hint;        /* what to do next                 */
 
 static void build_ui(void)
@@ -67,7 +67,7 @@ static void build_ui(void)
 /* Paint whatever the library currently reports.
  *
  * Three states worth distinguishing, because they fail for different reasons:
- * no credentials at all (provision it), associated but no relay (check the
+ * no credentials at all (provision it), associated but no HSC (check the
  * host or the device key), and connected.
  *
  * Read under the state lock — the Hyperwisor task writes these fields. */
@@ -96,7 +96,7 @@ static void paint_state(void)
         hint   = "Join the access point this device is advertising\n"
                  "and give it your Wi-Fi credentials.";
     } else if (ip) {
-        text   = "REACHING RELAY...";
+        text   = "REACHING HSC...";
         colour = 0x8f5a00;
         hint   = "On the network but not yet authenticated.\n"
                  "Register the device public key shown in the log.";
@@ -131,8 +131,12 @@ void app_main(void)
     }
     ESP_ERROR_CHECK(err);
 
+    /* bsp_init() brings up I2C, the IO expander, the RGB panel, touch AND
+     * the LVGL port. Do not call lvgl_port_init() yourself after it: a second
+     * lv_init() wipes the registered display, and the next refresh crashes on
+     * a NULL flush callback with a backtrace that points into LVGL rather than
+     * at your code. */
     ESP_ERROR_CHECK(bsp_init());
-    ESP_ERROR_CHECK(lvgl_port_init());
     build_ui();
 
     /* Tell the library what it may touch on this board. The library knows

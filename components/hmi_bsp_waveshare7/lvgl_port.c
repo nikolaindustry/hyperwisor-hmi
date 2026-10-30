@@ -99,6 +99,16 @@ esp_err_t lvgl_port_init(void)
         return ESP_ERR_INVALID_STATE;
     }
 
+    /* Idempotent on purpose. bsp_init() calls this, and an application that
+     * reasonably also calls it would otherwise run lv_init() twice -- which
+     * resets LVGL's state and orphans the display registered by the first
+     * call. The failure arrives later, as a NULL flush_cb inside
+     * lv_refr.c, so nothing in the backtrace points at the double init. */
+    if (s_disp) {
+        ESP_LOGD(TAG, "already initialised; ignoring");
+        return ESP_OK;
+    }
+
     lv_init();
 
     /* Draw buffers in PSRAM (2 x H_RES * LINES * bpp) */
