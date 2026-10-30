@@ -1,0 +1,18 @@
+## The IoT foundation. During development this points at a local checkout of
+## hyperwisor_esp_idf sitting beside this repository; once published, replace
+## the path with a version:
+##
+##   nikolaindustry/hyperwisor: "^0.4.0"
+##
+## The path must end in a directory named exactly "hyperwisor": ESP-IDF names a
+## path dependency after its DIRECTORY, not after the key here.
+
+dependencies:
+  idf: ">=5.5,<7.0"
+  hyperwisor:
+    path: ../../../../hyperwisor_esp_idf/components/hyperwisor
+  ## LVGL 8.4, not 9.x. The board port in hmi_bsp_waveshare7 is written
+  ## against the LVGL 8 driver API (lv_disp_drv_t, lv_disp_draw_buf_t),
+  ## which 9 replaced wholesale. Porting the BSP to LVGL 9 is tracked
+  ## separately -- pinning here keeps the examples building meanwhile.
+  lvgl/lvgl: "~8.4.0"

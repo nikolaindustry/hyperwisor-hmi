@@ -1,0 +1,37 @@
+# ESP32-S3 with 8 MB octal PSRAM, 16 MB flash.
+CONFIG_IDF_TARGET="esp32s3"
+CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
+CONFIG_SPIRAM=y
+CONFIG_SPIRAM_MODE_OCT=y
+CONFIG_SPIRAM_SPEED_80M=y
+
+# The RGB panel DMAs out of PSRAM; LVGL buffers live there too.
+CONFIG_SPIRAM_FETCH_INSTRUCTIONS=y
+CONFIG_SPIRAM_RODATA=y
+
+# The websocket task verifies a full ECDSA certificate chain. The 4 KB default
+# stack overflows inside mbedtls_x509_crt_parse_der(); 8 KB is the minimum that
+# completes the handshake. See the note in hyperwisor_ws.c.
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+
+# Mains-powered panel: keep the radio awake. See HYPERWISOR_WIFI_POWER_SAVE.
+CONFIG_HYPERWISOR_WIFI_PS_NONE=y
+
+# --- LVGL 8.4 ---
+# 16-bit colour matches the RGB panel; 32-bit doubles the framebuffer for
+# nothing on this hardware.
+CONFIG_LV_COLOR_DEPTH_16=y
+
+# Use the C allocator (PSRAM-backed) rather than LVGL's own pool.
+CONFIG_LV_MEM_CUSTOM=y
+CONFIG_LV_MEM_CUSTOM_INCLUDE="stdlib.h"
+
+# LVGL's Kconfig defaults this to an empty string, which it then emits as
+# `#include ""` in sdkconfig.h and fails to compile. Give it a real header.
+CONFIG_LV_ASSERT_HANDLER_INCLUDE="assert.h"
+
+# --- Partitions ---
+# The 1 MB default app slot cannot hold LVGL plus TLS. This board has 16 MB:
+# two 3.5 MB OTA slots and a 2 MB filesystem for assets.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="../../partitions/partitions_ota.csv"
